@@ -1,3 +1,6 @@
+// =====================
+// ELEMENTS
+// =====================
 const title = document.querySelector("h1");
 const yesBtn = document.getElementById("yesBtn");
 const noBtn = document.getElementById("noBtn");
@@ -33,7 +36,7 @@ yesBtn.addEventListener("click", () => {
 });
 
 // =====================
-// NO BUTTON ESCAPE LOGIC
+// NO BUTTON ESCAPE (POINTER EVENTS ONLY)
 // =====================
 let escapeCount = 0;
 const MAX_ESCAPES = 10;
@@ -58,21 +61,28 @@ function moveNoButton() {
   hoverSound.play().catch(() => {});
 }
 
-// Desktop
-noBtn.addEventListener("mouseenter", moveNoButton);
-
-// Mobile
-noBtn.addEventListener("touchstart", (e) => {
+// ONLY ONE EVENT — works on mobile + laptop
+noBtn.addEventListener("pointerdown", (e) => {
   e.preventDefault();
-  moveNoButton();
+  e.stopPropagation();
+
+  if (escapeCount < MAX_ESCAPES) {
+    moveNoButton();
+  } else {
+    finalNoAction();
+  }
+});
+
+// completely block normal click
+noBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
 });
 
 // =====================
-// NO BUTTON CLICK (after 10 escapes)
+// FINAL NO ACTION (after 10 escapes)
 // =====================
-noBtn.addEventListener("click", () => {
-  if (escapeCount < MAX_ESCAPES) return;
-
+function finalNoAction() {
   responseText.textContent =
     "No? Okay, but you're still my valentine! 🤭";
 
@@ -84,10 +94,10 @@ noBtn.addEventListener("click", () => {
   title.style.display = "none";
 
   noSound.play().catch(() => {});
-});
+}
 
 // =====================
-// HEARTS CANVAS ANIMATION
+// HEARTS CANVAS
 // =====================
 const canvas = document.getElementById("heartsCanvas");
 const ctx = canvas.getContext("2d");
@@ -140,32 +150,31 @@ class Heart {
   }
 }
 
-// Init hearts
+// init hearts
 for (let i = 0; i < 40; i++) {
   hearts.push(new Heart());
 }
 
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  hearts.forEach((heart) => heart.update());
+  hearts.forEach((h) => h.update());
   requestAnimationFrame(animate);
 }
-
 animate();
 
-// Mouse hearts (limit)
+// mouse hearts (limit)
 document.addEventListener("mousemove", (e) => {
   if (hearts.length > 150) return;
 
-  const heart = new Heart();
-  heart.x = e.clientX;
-  heart.y = e.clientY;
-  heart.size = 10;
-  heart.speed = 1;
-  hearts.push(heart);
+  const h = new Heart();
+  h.x = e.clientX;
+  h.y = e.clientY;
+  h.size = 10;
+  h.speed = 1;
+  hearts.push(h);
 });
 
-// Resize fix
+// resize fix
 window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
