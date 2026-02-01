@@ -1,6 +1,3 @@
-// =====================
-// ELEMENTS
-// =====================
 const title = document.querySelector("h1");
 const yesBtn = document.getElementById("yesBtn");
 const noBtn = document.getElementById("noBtn");
@@ -25,33 +22,58 @@ yesBtn.addEventListener("click", () => {
   title.style.color = "transparent";
   title.style.height = "0";
   title.style.margin = "0";
-});
 
-yesBtn.addEventListener("click", () => {
+  yesSound.play().catch(() => {});
+
   confetti({
-    particleCount: 100,
-    spread: 70,
+    particleCount: 120,
+    spread: 80,
     origin: { y: 0.6 },
   });
 });
 
 // =====================
-// NO BUTTON
+// NO BUTTON ESCAPE LOGIC
 // =====================
-noBtn.addEventListener("mouseover", () => {
-  const x =
-    Math.random() * (window.innerWidth - noBtn.offsetWidth);
-  const y =
-    Math.random() * (window.innerHeight - noBtn.offsetHeight);
+let escapeCount = 0;
+const MAX_ESCAPES = 10;
 
-  noBtn.style.position = "absolute";
+function moveNoButton() {
+  if (escapeCount >= MAX_ESCAPES) return;
+
+  escapeCount++;
+
+  const padding = 20;
+  const maxX = window.innerWidth - noBtn.offsetWidth - padding;
+  const maxY = window.innerHeight - noBtn.offsetHeight - padding;
+
+  const x = Math.random() * maxX;
+  const y = Math.random() * maxY;
+
+  noBtn.style.position = "fixed";
   noBtn.style.left = `${x}px`;
   noBtn.style.top = `${y}px`;
+
+  hoverSound.currentTime = 0;
+  hoverSound.play().catch(() => {});
+}
+
+// Desktop
+noBtn.addEventListener("mouseenter", moveNoButton);
+
+// Mobile
+noBtn.addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  moveNoButton();
 });
 
+// =====================
+// NO BUTTON CLICK (after 10 escapes)
+// =====================
 noBtn.addEventListener("click", () => {
-  responseText.textContent =
-    "No? Okay, but you're still my valentine! 🤭";
+  if (escapeCount < MAX_ESCAPES) return;
+
+  responseText.textContent = "No? Okay, but you're still my valentine! 🤭";
 
   gif.src =
     "https://i.pinimg.com/originals/3e/47/7e/3e477e83c35e2a7a38f19ccdad163faa.gif";
@@ -59,10 +81,12 @@ noBtn.addEventListener("click", () => {
   yesBtn.style.display = "none";
   noBtn.style.display = "none";
   title.style.display = "none";
+
+  noSound.play().catch(() => {});
 });
 
 // =====================
-// HEARTS CANVAS
+// HEARTS CANVAS ANIMATION
 // =====================
 const canvas = document.getElementById("heartsCanvas");
 const ctx = canvas.getContext("2d");
@@ -71,15 +95,6 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 const hearts = [];
-
-document.addEventListener("mousemove", (e) => {
-  const heart = new Heart();
-  heart.x = e.clientX;
-  heart.y = e.clientY;
-  heart.size = 10;
-  heart.speed = 1;
-  hearts.push(heart);
-});
 
 class Heart {
   constructor() {
@@ -99,7 +114,7 @@ class Heart {
       this.x - this.size,
       this.y + this.size / 2,
       this.x,
-      this.y + this.size
+      this.y + this.size,
     );
     ctx.bezierCurveTo(
       this.x + this.size,
@@ -107,7 +122,7 @@ class Heart {
       this.x + this.size / 2,
       this.y - this.size / 4,
       this.x,
-      this.y
+      this.y,
     );
     ctx.closePath();
     ctx.fillStyle = this.color;
@@ -116,20 +131,17 @@ class Heart {
 
   update() {
     this.y += this.speed;
-
     if (this.y > canvas.height) {
       this.y = -50;
       this.x = Math.random() * canvas.width;
     }
-
     this.draw();
   }
 }
 
-function init() {
-  for (let i = 0; i < 50; i++) {
-    hearts.push(new Heart());
-  }
+// Init hearts
+for (let i = 0; i < 40; i++) {
+  hearts.push(new Heart());
 }
 
 function animate() {
@@ -138,29 +150,22 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
-init();
 animate();
 
+// Mouse hearts (limit)
+document.addEventListener("mousemove", (e) => {
+  if (hearts.length > 150) return;
+
+  const heart = new Heart();
+  heart.x = e.clientX;
+  heart.y = e.clientY;
+  heart.size = 10;
+  heart.speed = 1;
+  hearts.push(heart);
+});
+
+// Resize fix
 window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-});
-
-// =====================
-// SOUNDS
-// =====================
-yesBtn.addEventListener("mouseenter", () => {
-  hoverSound.play();
-});
-
-noBtn.addEventListener("mouseenter", () => {
-  hoverSound.play();
-});
-
-yesBtn.addEventListener("click", () => {
-  yesSound.play();
-});
-
-noBtn.addEventListener("click", () => {
-  noSound.play();
 });
