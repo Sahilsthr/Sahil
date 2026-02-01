@@ -1,3 +1,6 @@
+// =====================
+// ELEMENTS
+// =====================
 const title = document.querySelector("h1");
 const yesBtn = document.getElementById("yesBtn");
 const noBtn = document.getElementById("noBtn");
@@ -22,57 +25,31 @@ yesBtn.addEventListener("click", () => {
   title.style.color = "transparent";
   title.style.height = "0";
   title.style.margin = "0";
+});
 
-  yesSound.play().catch(() => {});
-
+yesBtn.addEventListener("click", () => {
   confetti({
-    particleCount: 120,
-    spread: 80,
+    particleCount: 100,
+    spread: 70,
     origin: { y: 0.6 },
   });
 });
 
 // =====================
-// NO BUTTON ESCAPE LOGIC
+// NO BUTTON
 // =====================
-let escapeCount = 0;
-const MAX_ESCAPES = 10;
+noBtn.addEventListener("mouseover", () => {
+  const x =
+    Math.random() * (window.innerWidth - noBtn.offsetWidth);
+  const y =
+    Math.random() * (window.innerHeight - noBtn.offsetHeight);
 
-function moveNoButton() {
-  if (escapeCount >= MAX_ESCAPES) return;
-
-  escapeCount++;
-
-  const padding = 20;
-  const maxX = window.innerWidth - noBtn.offsetWidth - padding;
-  const maxY = window.innerHeight - noBtn.offsetHeight - padding;
-
-  const x = Math.random() * maxX;
-  const y = Math.random() * maxY;
-
-  noBtn.style.position = "fixed";
+  noBtn.style.position = "absolute";
   noBtn.style.left = `${x}px`;
   noBtn.style.top = `${y}px`;
-
-  hoverSound.currentTime = 0;
-  hoverSound.play().catch(() => {});
-}
-
-// Desktop
-noBtn.addEventListener("mouseenter", moveNoButton);
-
-// Mobile
-noBtn.addEventListener("touchstart", (e) => {
-  e.preventDefault();
-  moveNoButton();
 });
 
-// =====================
-// NO BUTTON CLICK (after 10 escapes)
-// =====================
 noBtn.addEventListener("click", () => {
-  if (escapeCount < MAX_ESCAPES) return;
-
   responseText.textContent =
     "No? Okay, but you're still my valentine! 🤭";
 
@@ -82,12 +59,10 @@ noBtn.addEventListener("click", () => {
   yesBtn.style.display = "none";
   noBtn.style.display = "none";
   title.style.display = "none";
-
-  noSound.play().catch(() => {});
 });
 
 // =====================
-// HEARTS CANVAS ANIMATION
+// HEARTS CANVAS
 // =====================
 const canvas = document.getElementById("heartsCanvas");
 const ctx = canvas.getContext("2d");
@@ -96,6 +71,15 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 const hearts = [];
+
+document.addEventListener("mousemove", (e) => {
+  const heart = new Heart();
+  heart.x = e.clientX;
+  heart.y = e.clientY;
+  heart.size = 10;
+  heart.speed = 1;
+  hearts.push(heart);
+});
 
 class Heart {
   constructor() {
@@ -132,17 +116,20 @@ class Heart {
 
   update() {
     this.y += this.speed;
+
     if (this.y > canvas.height) {
       this.y = -50;
       this.x = Math.random() * canvas.width;
     }
+
     this.draw();
   }
 }
 
-// Init hearts
-for (let i = 0; i < 40; i++) {
-  hearts.push(new Heart());
+function init() {
+  for (let i = 0; i < 50; i++) {
+    hearts.push(new Heart());
+  }
 }
 
 function animate() {
@@ -151,22 +138,29 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
+init();
 animate();
 
-// Mouse hearts (limit)
-document.addEventListener("mousemove", (e) => {
-  if (hearts.length > 150) return;
-
-  const heart = new Heart();
-  heart.x = e.clientX;
-  heart.y = e.clientY;
-  heart.size = 10;
-  heart.speed = 1;
-  hearts.push(heart);
-});
-
-// Resize fix
 window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+});
+
+// =====================
+// SOUNDS
+// =====================
+yesBtn.addEventListener("mouseenter", () => {
+  hoverSound.play();
+});
+
+noBtn.addEventListener("mouseenter", () => {
+  hoverSound.play();
+});
+
+yesBtn.addEventListener("click", () => {
+  yesSound.play();
+});
+
+noBtn.addEventListener("click", () => {
+  noSound.play();
 });
